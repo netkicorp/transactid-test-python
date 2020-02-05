@@ -1,21 +1,27 @@
 import datetime
+import requests
+
 from flask import Flask
+from flask import render_template
 from flask import request
 from flask import url_for
+
 from transactid.transactid import TransactID
 from transactid.exceptions import InvalidSignatureException
 from transactid.exceptions import DecodeException
-
 from dummy_keys import DUMMY_PRIVATE_KEY
 from dummy_keys import DUMMY_CERT
 
+# this would need to be created for each individual client using their private key and certificate
 transact = TransactID(private_key_pem=DUMMY_PRIVATE_KEY, certificate_pem=DUMMY_CERT)
+
+
 app = Flask(__name__)
 
 
 @app.route("/")
 def hello_world():
-    return 'Hello, World!'
+    return render_template("index.html")
 
 
 @app.route("/initial-invoice-request")
@@ -32,7 +38,12 @@ def initial_invoice_request():
         notification_url=url_for("payment_request", _external=True)
     )
 
-    return serialized_invoice_request
+    url = request.args.get("url")
+    if url:
+        r = requests.post(url, data=serialized_invoice_request)
+        return f"response from {url} was {r.status_code}"
+    else:
+        return serialized_invoice_request
 
 
 @app.route("/invoice-request", methods=["POST"])
@@ -56,7 +67,7 @@ def invoice_request():
         return "Unable to decode protobuf object"
     else:
         invoice_request = transact.get_verified_invoice_request()
-        print(invoice_request)
+        app.logger.info(invoice_request)
         # here is where you would normally do business logic against the data you received
         serialized_payment_request = transact.create_payment_request(
             time_stamp=datetime.datetime.now(),
@@ -86,7 +97,7 @@ def payment_request():
         return "Unable to decode protobuf object"
     else:
         payment_request = transact.get_verified_payment_request()
-        print(payment_request)
+        app.logger.info(payment_request)
         # here is where you would normally do business logic against the data you received
 
         serialized_payment = transact.create_payment(
@@ -107,7 +118,7 @@ def payment():
         return "Unable to decode protobuf object"
     else:
         payment = transact.get_verified_payment()
-        print(payment)
+        app.logger.info(payment)
         # here is where you would normally do business logic against the data you received
         serialized_payment_ack = transact.create_payment_ack(memo="thanks for the coin chummer")
 

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transact ID Test Server Instructions</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='base.css') }}">
+</head>
+<body>
+<div>
+Herein lie the endpoints that can be used for testing responses using the TransactID library.  These end points are top level and generic here.  In your own instances you would want to have an identifier for each of your customers who are using this.  E.g. "/customer_identifier/invoice-request" which you'll be using as the relivent endpoint when building out the URLs.<br><br>
+
+There are four endpoints (besides this one, hi!) that you can use for testing.  The first of these is only for this testing and won't be used in the wild.<br><br>
+</div>
+    <div>
+    1.<br>
+    Endpoint: /initial-invoice-request<br>
+    Verb: GET<br>
+    Get Response: Binary object<br>
+    Verb: POST<br>
+    POST URL Parameter: url=[your invoice-request endpoint]<br>
+    POST Response: Str showing success or not sending to provided URL.<br>
+    Notes: just send a GET request to this to receive back an invoice-request binary so that you can test parsing things.  If you want to test your full flow with getting an invoice-request object at your correct endpoint use the POST as described and it will send the binary object to that URL.<br>
+</div>
+<div>
+    <br>2.<br>
+    Endpoint: /invoice-request<br>
+    Verb: POST<br>
+    Payload: binary object<br>
+    Response: binary serialized_payment_request<br>
+    Notes: send a binary created using the create_invoice_request method to this endpoint and receive a payment request in return.<br>
+</div>
+<div>
+    <br>3.<br>
+    Endpoint: /payment-request<br>
+    Verb: POST<br>
+    Payload: binary object<br>
+    Response: binary serialized_payment<br>
+    Notes: send a binary created using the create_payment_request method to this endpoint and receive a payment object in return.<br>
+</div>
+<div>
+    <br>4.<br>
+    Endpoint: /payment<br>
+    Verb: POST<br>
+    Payload: binary object<br>
+    Response: binary serialized_payment_ack<br>
+    Notes: send a binary created using the create_payment method to this endpoint and receive a payment_ack in return.<br>
+</div>
+</body>
+</html>
